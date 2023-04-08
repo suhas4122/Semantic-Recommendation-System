@@ -26,7 +26,7 @@ for object in data:
             object[key] = object[key].replace(',', '')
     
 # create a new file to write the turtle representation
-uris_file = open(file='uris.txt', mode='w')  
+uris_file = open(file='data/uris.txt', mode='w')  
 
 for object in data:
     convert_to_turtle_product(object, uris_file)
