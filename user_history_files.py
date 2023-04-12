@@ -51,6 +51,8 @@ def get_multi_manufs():
         for line in multi_manufs:
             f.write(f"{line}\n")
 
+# get_multi_manufs()
+
 # randomly select 100 uris from the list
 random_uris = random.sample(uris, 100)
 
@@ -73,5 +75,3 @@ for j in range(8):
             user_histories_file.write(' ;\n')
         else:
             user_histories_file.write(' .\n\n')
-
-# get_multi_manufs()

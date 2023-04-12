@@ -32,7 +32,7 @@ def convert_to_turtle_product(object, turtle_file):
     manufacturer = object['Manufacturer']
     manufacturer = re.sub('[^0-9a-zA-Z ]+', ' ', manufacturer)
     manufacturer = re.sub(' +', ' ', manufacturer)
-    manufacturer = manufacturer.replace(' ', '_')
+    manufacturer = manufacturer.replace(' ', '_').lower()
     # if manufacturer is not empty
     if manufacturer != '':
         turtle_file.write('\t\texs:manufacturer exr:'+ manufacturer + ' ;\n')
