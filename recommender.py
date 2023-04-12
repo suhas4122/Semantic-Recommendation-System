@@ -55,25 +55,21 @@ def string_matching_filter(all_product_uris, history_uris):
             result.append((uri, avg_sim))
     return result
 
-def common_purchase_filter(user_uri, history_uris):
-    result = {}
-    for uri in history_uris:
-        sparql.setQuery(sparql_prefix + """
-            SELECT ?product
-            WHERE {
-            """
-                        + uri + """ ^exs:bought/exs:bought ?product.
-                FILTER(?product != """ + uri + """ )
-                FILTER NOT EXISTS {?product ^exs:bought """ + user_uri + """ .}
-            }
-        """)
-        ret = sparql.queryAndConvert()
-        for ret_val in ret['results']['bindings']:
-            if ret_val['product']['value'] in result:
-                result[ret_val['product']['value']] += 1
-            else:
-                result[ret_val['product']['value']] = 1
-    result = sorted(result.items(), key=lambda x: x[1], reverse=True)
+def common_purchase_filter(user_uri):
+    sparql.setQuery(sparql_prefix + """
+        SELECT ?product2 (COUNT(?user) AS ?count_user)
+        WHERE {
+            """ + user_uri + """ exs:bought ?product1.
+            ?user exs:bought ?product1;
+                  exs:bought ?product2.
+            FILTER(?product1 != ?product2)
+            FILTER NOT EXISTS {""" + user_uri + """ exs:bought ?product2.}
+        } GROUP BY ?product2
+        ORDER BY DESC (?count_user)
+    """)
+    ret = sparql.queryAndConvert()
+    ret_val = ret['results']['bindings']
+    result = [(x, int(y)) for x, y in zip([x['product2']['value'] for x in ret_val], [y['count_user']['value'] for y in ret_val])]
     return result
 
 def cat_sim_score(uri, history_uris):
@@ -240,7 +236,7 @@ def recommend(df):
 
 # common_purchases = common_purchase_filter(history_uris, user_uri)
 
-user_ind = 3
+user_ind = 2
 user_uri = "exr:user_" + str(user_ind)
 # if df.csv exists, load it, otherwise create it
 if os.path.exists('df/df_' + str(user_ind) + '.csv'):
@@ -259,3 +255,7 @@ else:
 print(df.describe())
 df = recommend(df)
 print(df.head(10))
+# res = common_purchase_filter(user_uri)
+# print(res)
+# res2 = [x for x in res if x[1] > 1]
+# print(len(res2))
