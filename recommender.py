@@ -2,6 +2,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from SPARQLWrapper import SPARQLWrapper, JSON
 import pandas as pd
+import os
 from functools import lru_cache
 
 sparql = SPARQLWrapper("http://localhost:3030/all_products/query")
@@ -40,7 +41,7 @@ def get_sim_score(uri, history_names):
         embeddings = model.encode([name, history_name])
         similarity_scores.append(
             get_cosine_similarity(embeddings[0], embeddings[1]))
-    similarity_scores.sort(reverse=True, inplace=True)
+    similarity_scores.sort(reverse=True)
     top_len = int(len(similarity_scores) * 0.3)
     return sum(similarity_scores[:top_len]) / top_len
 
@@ -220,6 +221,8 @@ def get_manufacturer_count(uri, user):
 def complete_df(df):
     for uri in df.index:
         df.loc[uri, 'rating'] = get_rating(uri)
+        # if pd.isnull(df.loc[uri, 'rating']):
+        #     df.loc[uri, 'rating'] = 0
         df.loc[uri, 'manuf_count'] = get_manufacturer_count(uri, user_uri)
         # check if it is Nan
         if np.isnan(df.loc[uri, 'name_sim_score']):
@@ -236,12 +239,23 @@ def recommend(df):
     return df
 
 # common_purchases = common_purchase_filter(history_uris, user_uri)
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-user_uri = "exr:user_1"
-history_uris = get_history_uris()
-hist_categories = get_hist_categories()
-df = initial_filter(user_uri, history_uris)
-complete_df(df)
+
+user_ind = 3
+user_uri = "exr:user_" + str(user_ind)
+# if df.csv exists, load it, otherwise create it
+if os.path.exists('df/df_' + str(user_ind) + '.csv'):
+    df = pd.read_csv('df/df_' + str(user_ind) + '.csv', index_col=0)
+else:
+    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    history_uris = get_history_uris()
+    hist_categories = get_hist_categories()
+    df = initial_filter(user_uri, history_uris)
+    complete_df(df)
+    df.replace('', 0, inplace=True)
+    df.fillna(0, inplace=True)
+    df = df.astype({'name_sim_score': 'float64', 'cat_sim_score': 'float64', 'rating': 'float64', 'manuf_count': 'int64'})
+    df.to_csv('df/df_' + str(user_ind) + '.csv')
+
 print(df.describe())
 df = recommend(df)
 print(df.head(10))
