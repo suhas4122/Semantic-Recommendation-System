@@ -175,7 +175,7 @@ def initial_filter(user_uri, history_uris):
             "exr:" + ret_val['uri']['value'].split('#')[1])
 
     # print(all_products_uris, history_uris)
-    # result_1 = string_matching_filter(all_products_uris, history_uris)
+    result_1 = string_matching_filter(all_products_uris, history_uris)
     result_2 = category_similarity_filter(all_products_uris, history_uris)
 
     # name similarity score, category similarity score, rating, how many products of this manufacturer are in the history
@@ -183,8 +183,8 @@ def initial_filter(user_uri, history_uris):
     df = pd.DataFrame(
         columns=['name_sim_score', 'cat_sim_score', 'rating', 'manuf_count'])
     # print(result_1)
-    # for (uri, sc) in result_1:
-    #     df.loc[uri, 'name_sim_score'] = sc
+    for (uri, sc) in result_1:
+        df.loc[uri, 'name_sim_score'] = sc
     for (uri, sc) in result_2:
         df.loc[uri, 'cat_sim_score'] = sc
     print(df)
@@ -205,15 +205,6 @@ def get_rating(uri):
 
 
 def get_manufacturer_count(uri, user):
-    sparql.setQuery(sparql_prefix + """
-        SELECT ?manufacturer
-        WHERE {
-        """
-                    + uri + """ exs:manufacturer ?manufacturer. 
-        }
-    """)
-    ret = sparql.queryAndConvert()
-    manufacturer = ret['results']['bindings'][0]['manufacturer']['value']
     sparql.setQuery(sparql_prefix + """
         SELECT DISTINCT(?uri)
         WHERE {
