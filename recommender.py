@@ -33,7 +33,6 @@ def get_name_from_uri(uri):
 def get_cosine_similarity(embedding1, embedding2):
     return np.dot(embedding1, embedding2) / (np.linalg.norm(embedding1) * np.linalg.norm(embedding2))
 
-
 def get_sim_score(uri, history_names):
     name = get_name_from_uri(uri)
     similarity_scores = []
@@ -41,7 +40,9 @@ def get_sim_score(uri, history_names):
         embeddings = model.encode([name, history_name])
         similarity_scores.append(
             get_cosine_similarity(embeddings[0], embeddings[1]))
-    return sum(similarity_scores) / len(similarity_scores)
+    similarity_scores.sort(reverse=True, inplace=True)
+    top_len = int(len(similarity_scores) * 0.3)
+    return sum(similarity_scores[:top_len]) / top_len
 
 # @lru_cache(maxsize=1000)
 def string_matching_filter(all_product_uris, history_uris):
@@ -52,7 +53,6 @@ def string_matching_filter(all_product_uris, history_uris):
         if uri not in history_uris and avg_sim > 0.2:
             result.append((uri, avg_sim))
     return result
-
 
 def common_purchase_filter(user_uri, history_uris):
     result = {}
@@ -75,7 +75,6 @@ def common_purchase_filter(user_uri, history_uris):
     result = sorted(result.items(), key=lambda x: x[1], reverse=True)
     return result
 
-
 def cat_sim_score(uri, history_uris):
     cat = []
     sparql.setQuery(sparql_prefix + """
@@ -97,6 +96,7 @@ def cat_sim_score(uri, history_uris):
         similarities.append(jaccard_similarity)
         # print(jaccard_similarity)
     max_sim = max(similarities)
+    return max_sim
 
 def get_history_uris():
     history_uris = []
@@ -127,7 +127,6 @@ def get_hist_categories():
         for ret_val in ret['results']['bindings']:
             hist_categories[uri].append(ret_val['categoryLabel']['value'])
     return hist_categories
-
 
 def category_similarity_filter(all_product_uris, history_uris):
     categories = {}
@@ -229,6 +228,12 @@ def complete_df(df):
             df.loc[uri, 'cat_sim_score'] = cat_sim_score(uri, history_uris)
     return df
 
+def recommend(df):
+    df['rating'] = df['rating'] - 2.5
+    df.loc[df['rating'] < 0, 'rating'] = 0
+    df['rec_score'] = (df['name_sim_score'] * 10 + df['cat_sim_score'] * 5 + df['rating']  + df['manuf_count'] * 2) * 2.5
+    df = df.sort_values(by=['rec_score'], ascending=False)
+    return df
 
 # common_purchases = common_purchase_filter(history_uris, user_uri)
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -237,4 +242,6 @@ history_uris = get_history_uris()
 hist_categories = get_hist_categories()
 df = initial_filter(user_uri, history_uris)
 complete_df(df)
-print(df)
+print(df.describe())
+df = recommend(df)
+print(df.head(10))
