@@ -13,7 +13,7 @@ exr:user_1
 	exs:bought exr:Veirdo_Oversized_Loose_Baggy_Fit_Drop_Shoulder_Half_Sleeves_Pure_Cotton_The_Original_Graphic_Printed_T_Shirt_for_Men ;
 	exs:bought exr:Sony_Dualshock_4_Wireless_Controller_for_PlayStation_4_Black_ ;
 	exs:bought exr:Microsoft_Xbox_Wireless_On_Ear_Headphones_with_mic_Black_ ;
-	exs:bought exr:exr:The_Best_Of_1990_2000 ;
+	exs:bought exr:The_Best_Of_1990_2000 ;
 	exs:bought exr:Season_of_the_Witch ;
 	exs:bought exr:HIDE_SKIN_Mens_Leather_Belt .
 
