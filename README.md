@@ -1,1 +1,1 @@
-# Semantic-Recommendation-System
+# Semantic-Product-Recommendation-System
