@@ -43,6 +43,7 @@ with cc2:
     uris = df_res["uris"].tolist()
     for i in range(10):
         uri = uris[i]
+        # print(uri)
         data = recommender.get_uri_data(uri)
         title_container = st.container()
         col1, gap, col2 = st.columns([8, 1, 20])
@@ -60,7 +61,9 @@ with cc2:
 with cc3:
     st.header("Other Users Also Bought")
     items = recommender.common_purchase_filter("exr:user_" + str(st.session_state.user_ind))
+    ind = 0
     for (uri, count) in items:
+        ind += 1
         if count < 2:
             break
         uri = "exr:" + uri.split('#')[1]
@@ -74,6 +77,6 @@ with cc3:
                 st.markdown(f"**{data['name']}**")
                 st.markdown(f"***Price: ₹{data['price']}***")
                 st.markdown(f"***Rating: {data['rating']}***")
-                if st.button("Buy Now", key = data['link']):
+                if st.button("Buy Now", key = str(data['link']) + str(ind)):
                     webbrowser.open_new_tab(data["link"])
         st.divider()

@@ -3,7 +3,6 @@ import numpy as np
 from SPARQLWrapper import SPARQLWrapper, JSON
 import pandas as pd
 import os
-from functools import lru_cache
 
 sparql = SPARQLWrapper("http://localhost:3030/all_products/query")
 sparql.setReturnFormat(JSON)
@@ -41,11 +40,13 @@ def get_uri_data(uri):
                             exs:rating ?rating.
         }
     """)
-    data["name"] = sparql.queryAndConvert()['results']['bindings'][0]['name']['value']
-    data["price"] = sparql.queryAndConvert()['results']['bindings'][0]['price']['value']
-    data["image"] = sparql.queryAndConvert()['results']['bindings'][0]['image']['value']
-    data["link"] = sparql.queryAndConvert()['results']['bindings'][0]['link']['value']
-    data["rating"] = sparql.queryAndConvert()['results']['bindings'][0]['rating']['value']
+    q = sparql.queryAndConvert()
+    # print(q)
+    data["name"] = q['results']['bindings'][0]['name']['value']
+    data["price"] = q['results']['bindings'][0]['price']['value']
+    data["image"] = q['results']['bindings'][0]['image']['value']
+    data["link"] = q['results']['bindings'][0]['link']['value']
+    data["rating"] = q['results']['bindings'][0]['rating']['value']
     return data
 
 def get_cosine_similarity(embedding1, embedding2):
@@ -242,7 +243,7 @@ def prod_sim_score(uri_1, uri_2):
 
 def recommend(df):
     df['rec_score'] = (df['name_sim_score'] * 10 + df['cat_sim_score']
-                       * 5 + df['rating'] + df['manuf_count'] * 1) * 2.5
+                       * 5 + df['rating'] * 1 + df['manuf_count'] * 1)
     df = df.sort_values(by=['rec_score'], ascending=False)
 
     recs = []

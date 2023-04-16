@@ -22,37 +22,6 @@ sparql_prefix = """
     prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 """
 
-def get_multi_manufs():
-    manufacturer_to_products = {}
-    for uri in uris:
-        sparql.setQuery(sparql_prefix + """
-            SELECT ?manufacturer
-            WHERE {
-            """
-                    + uri +
-                    """ exs:manufacturer ?manufacturer .
-            }
-        """)
-        ret = sparql.queryAndConvert()
-        manufacturer = ret['results']['bindings'][0]['manufacturer']['value']
-        if manufacturer in manufacturer_to_products:
-            manufacturer_to_products[manufacturer].append(uri)
-        else:
-            manufacturer_to_products[manufacturer] = [uri]
-
-    random_uris = []
-    multi_manufs = []
-    for manufacturer in manufacturer_to_products:
-        if len(manufacturer_to_products[manufacturer]) > 1:
-            multi_manufs.append(manufacturer.split('#')[1])
-            random_uris.extend(random.choice(manufacturer_to_products[manufacturer]))
-
-    with open('data/multi_manufs.txt', 'w') as f:
-        for line in multi_manufs:
-            f.write(f"{line}\n")
-
-# get_multi_manufs()
-
 # randomly select 100 uris from the list
 random_uris = random.sample(uris, 100)
 
