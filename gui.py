@@ -62,6 +62,7 @@ with cc3:
     st.header("Other Users Also Bought")
     items = recommender.common_purchase_filter("exr:user_" + str(st.session_state.user_ind))
     ind = 0
+    print(items)
     for (uri, count) in items:
         ind += 1
         if count < 2:

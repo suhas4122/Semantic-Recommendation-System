@@ -82,6 +82,7 @@ def common_purchase_filter(user_uri):
             ?user exs:bought ?product1;
                   exs:bought ?product2.
             FILTER(?product1 != ?product2)
+            FILTER(?user != """ + user_uri + """)
             FILTER NOT EXISTS {""" + user_uri + """ exs:bought ?product2.}
         } GROUP BY ?product2
         ORDER BY DESC (?count_user)
